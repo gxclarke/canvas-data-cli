@@ -27,6 +27,13 @@ var cli = yargs
       describe: 'the configuration file to use',
       type: 'string'
     })
+    .option('filter', {
+      alias: 'f',
+      describe: 'list of tables to synchronize, ex: -f user_dim account_dim',
+      array: true,
+      type: 'string'
+    })
+
     .help('help')
   })
   .command('sampleConfig', 'write a sample config file to config.js.sample')
@@ -100,7 +107,7 @@ var cli = yargs
       type: 'string'
     }).option('params', {
       alias: 'p',
-      desscribe: 'params in JSON form',
+      describe: 'params in JSON form',
       demand: false,
       type: 'string'
     })

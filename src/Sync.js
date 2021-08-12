@@ -1,5 +1,6 @@
 var path = require('path')
 var fs = require('fs')
+var _ = require('lodash')
 var Api = require('./Api')
 var FileDownloader = require('./FileDownloader')
 var async = require('async')
@@ -12,6 +13,7 @@ class Sync {
     this.opts = opts
     this.logger = logger
     this.api = new Api(config)
+    this.tableFilter = opts.filter
     this.fileDownloader = new FileDownloader(logger)
     this.saveLocation = path.resolve(process.cwd(), config.saveLocation)
   }
@@ -20,7 +22,14 @@ class Sync {
       if (err) return cb(err)
       this.downloadSchema(toSync.schemaVersion, (err) => {
         if (err) return cb(err)
-        async.mapLimit(toSync.files, CONCURRENCY_LIMIT, this.processFile.bind(this), (err, results) => {
+        
+        var toSyncFiles = toSync.files
+        if (this.tableFilter) {
+          toSyncFiles = _.filter(toSyncFiles, (file) => _.includes(this.tableFilter, file.table))
+          this.logger.info(`filter applied: ${toSyncFiles.length} files`)
+        }
+
+        async.mapLimit(toSyncFiles, CONCURRENCY_LIMIT, this.processFile.bind(this), (err, results) => {
           if (err) return cb(err)
 
           var splitResults = this.splitResults(results)
